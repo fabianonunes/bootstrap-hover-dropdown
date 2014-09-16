@@ -1,3 +1,4 @@
+/* global jQuery */
 /**
  * @preserve
  * Project: Bootstrap Hover Dropdown
@@ -30,18 +31,20 @@
                 $parent = $this.parent(),
                 defaults = {
                     delay: 500,
-                    instantlyCloseOthers: true
+                    instantlyCloseOthers: true,
+                    openDelay : 500
                 },
                 data = {
                     delay: $(this).data('delay'),
-                    instantlyCloseOthers: $(this).data('close-others')
+                    instantlyCloseOthers: $this.data('close-others'),
+                    openDelay : $this.data('open-delay')
                 },
                 showEvent   = 'show.bs.dropdown',
                 hideEvent   = 'hide.bs.dropdown',
                 // shownEvent  = 'shown.bs.dropdown',
                 // hiddenEvent = 'hidden.bs.dropdown',
                 settings = $.extend(true, {}, defaults, options, data),
-                timeout;
+                timeout, openTimeout;
 
             $parent.hover(function (event) {
                 // so a neighbor can't open the dropdown
@@ -57,6 +60,7 @@
                     $parent.removeClass('open');
                     $this.trigger(hideEvent);
                 }, settings.delay);
+                window.clearTimeout(openTimeout);
             });
 
             // this helps with button groups!
@@ -90,19 +94,27 @@
             });
 
             function openDropdown(event) {
-                $allDropdowns.find(':focus').blur();
-
-                if(settings.instantlyCloseOthers === true)
-                    $allDropdowns.removeClass('open');
-
                 window.clearTimeout(timeout);
-                $parent.addClass('open');
-                $this.trigger(showEvent);
+                // window.clearTimeout(openTimeout);
+
+                openTimeout = window.setTimeout(function () {
+
+                    $allDropdowns.find(':focus').blur();
+
+                    if(settings.instantlyCloseOthers === true) {
+                        $allDropdowns.removeClass('open');
+                    }
+
+                    $parent.addClass('open');
+                    $this.trigger(showEvent);
+
+                }, $allDropdowns.hasClass('open') ? 0 : settings.openDelay);
+
             }
         });
     };
 
-    $(document).ready(function () {
+    $(function () {
         // apply dropdownHover to all elements with the data-hover="dropdown" attribute
         $('[data-hover="dropdown"]').dropdownHover();
     });
